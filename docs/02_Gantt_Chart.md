@@ -1,7 +1,6 @@
 # Gantt Chart — 냠냠코치
 
-> 날짜는 예시(2026-06-01 ~ 06-10)입니다. 실제 프로젝트 기간으로 수정하세요.
-> GitLab은 Mermaid를 자동 렌더링합니다.
+
 
 ```mermaid
 gantt
