@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.community.CommunityMapper">
+
+    <insert id="insertPost" parameterType="Post" useGeneratedKeys="true" keyProperty="bno">
+        INSERT INTO posts (mno, board, title, content)
+        VALUES (#{mno}, #{board}, #{title}, #{content})
+    </insert>
+
+    <select id="findPosts" resultType="Post">
+        SELECT p.*, m.name AS author, m.email AS author_email,
+               (SELECT COUNT(*) FROM comments c WHERE c.bno = p.bno) AS comment_count,
+               EXISTS(SELECT 1 FROM post_likes pl WHERE pl.bno = p.bno AND pl.mno = #{mno}) AS liked
+        FROM posts p
+        JOIN members m ON m.mno = p.mno
+        <where>
+            p.hidden = 0
+            <if test="board != null and board != ''">AND p.board = #{board}</if>
+        </where>
+        ORDER BY p.bno DESC
+        LIMIT #{size} OFFSET #{offset}
+    </select>
+
+    <!-- 전체 개수 (총 페이지 계산용). findPosts 의 (숨김+board) 필터와 동일 결과 집합이어야 함 -->
+    <select id="countPosts" resultType="int">
+        SELECT COUNT(*)
+        FROM posts
+        <where>
+            hidden = 0
+            <if test="board != null and board != ''">AND board = #{board}</if>
+        </where>
+    </select>
+
+    <select id="findPost" resultType="Post">
+        SELECT p.*, m.name AS author, m.email AS author_email,
+               (SELECT COUNT(*) FROM comments c WHERE c.bno = p.bno) AS comment_count,
+               EXISTS(SELECT 1 FROM post_likes pl WHERE pl.bno = p.bno AND pl.mno = #{mno}) AS liked
+        FROM posts p
+        JOIN members m ON m.mno = p.mno
+        WHERE p.bno = #{bno}
+    </select>
+
+    <!-- 오늘(00:00 이후) 작성 게시글 중 좋아요 상위 N개. 숨김 제외, 동점이면 최신 우선 -->
+    <select id="findTopToday" resultType="Post">
+        SELECT p.*, m.name AS author,
+               (SELECT COUNT(*) FROM comments c WHERE c.bno = p.bno) AS comment_count
+        FROM posts p
+        JOIN members m ON m.mno = p.mno
+        WHERE p.created_at &gt;= CURDATE() AND p.hidden = 0
+        ORDER BY p.likes DESC, p.bno DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 운영 콘솔: 숨김 포함 전체 게시글 (hidden 플래그 포함) -->
+    <select id="findAllForOps" resultType="Post">
+        SELECT p.*, m.name AS author,
+               (SELECT COUNT(*) FROM comments c WHERE c.bno = p.bno) AS comment_count
+        FROM posts p
+        JOIN members m ON m.mno = p.mno
+        ORDER BY p.bno DESC
+    </select>
+
+    <update id="setHidden">
+        UPDATE posts SET hidden = #{hidden} WHERE bno = #{bno}
+    </update>
+
+    <!-- 사용자 프로필: 특정 회원 작성 글(숨김 제외) -->
+    <select id="findByAuthor" resultType="Post">
+        SELECT p.*, m.name AS author,
+               (SELECT COUNT(*) FROM comments c WHERE c.bno = p.bno) AS comment_count
+        FROM posts p
+        JOIN members m ON m.mno = p.mno
+        WHERE p.mno = #{mno} AND p.hidden = 0
+        ORDER BY p.bno DESC
+    </select>
+
+    <!-- 좋아요 (사용자별) -->
+    <select id="existsLike" resultType="int">
+        SELECT COUNT(*) FROM post_likes WHERE mno = #{mno} AND bno = #{bno}
+    </select>
+    <insert id="insertLike">
+        INSERT INTO post_likes (mno, bno) VALUES (#{mno}, #{bno})
+    </insert>
+    <delete id="deleteLike">
+        DELETE FROM post_likes WHERE mno = #{mno} AND bno = #{bno}
+    </delete>
+    <update id="updateLikes">
+        UPDATE posts SET likes = GREATEST(likes + #{delta}, 0) WHERE bno = #{bno}
+    </update>
+    <select id="selectLikes" resultType="java.lang.Integer">
+        SELECT likes FROM posts WHERE bno = #{bno}
+    </select>
+
+    <update id="updatePost" parameterType="Post">
+        UPDATE posts SET title = #{title}, content = #{content} WHERE bno = #{bno}
+    </update>
+
+    <delete id="deletePost">
+        DELETE FROM posts WHERE bno = #{bno}
+    </delete>
+
+    <insert id="insertComment" parameterType="Comment" useGeneratedKeys="true" keyProperty="cno">
+        INSERT INTO comments (bno, mno, content) VALUES (#{bno}, #{mno}, #{content})
+    </insert>
+
+    <select id="findComments" resultType="Comment">
+        SELECT c.*, m.name AS author, m.email AS author_email
+        FROM comments c
+        JOIN members m ON m.mno = c.mno
+        WHERE c.bno = #{bno}
+        ORDER BY c.cno
+    </select>
+
+    <select id="findComment" resultType="Comment">
+        SELECT * FROM comments WHERE cno = #{cno}
+    </select>
+
+    <update id="updateComment">
+        UPDATE comments SET content = #{content} WHERE cno = #{cno}
+    </update>
+
+    <delete id="deleteComment">
+        DELETE FROM comments WHERE cno = #{cno}
+    </delete>
+
+</mapper>

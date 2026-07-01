@@ -1,0 +1,443 @@
+/* =========================================================
+   DinoDiet · 냠냠코치 디자인 시스템 (전역)
+   - 제공받은 DinoDiet 시안에서 토큰/컴포넌트 클래스를 추출
+   - 모든 View에서 재사용하는 공통 스타일
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* color */
+  --color-teal: #77c0b3;
+  --color-teal-dark: #589b90;
+  --color-beige: #ede0cf;
+  --color-tan: #d9c3a3;
+  --color-red: #d83d52;
+  --color-white: #ffffff;
+  --color-text-dark: #503d50;
+  --color-text-light: #f4f0eb;
+
+  /* radius */
+  --radius-pill: 9999px;
+  --radius-large: 40px;
+  --radius-medium: 24px;
+  --radius-small: 12px;
+
+  /* font */
+  --font-main: 'Fredoka', 'Pretendard', sans-serif;
+
+  /* =========================================================
+     시맨틱 디자인 토큰 (대시보드 리팩터링)
+     기존 브랜드 팔레트를 역할(role) 기반으로 재정의
+     ========================================================= */
+
+  /* color roles */
+  --primary: #d83d52;        /* primary CTA (식단 기록하기) */
+  --primary-dark: #b8303f;
+  --accent: #77c0b3;         /* 브랜드 민트 — 데이터/secondary */
+  --accent-dark: #589b90;
+  --success: #3f9d7a;
+  --warning: #d99a2b;
+  --danger: #d83d52;
+  --surface: #ffffff;
+  --surface-muted: #f5ecdd;  /* 카드 내부 패널/트랙 배경 */
+  --text-strong: #3c2f3c;    /* 제목·강조 텍스트 */
+  --text: #503d50;
+  --text-muted: #7a6c61;     /* 보조 텍스트 — 기존 tan보다 대비 강화 */
+  --border-soft: #ece1d1;    /* 연한 구분선 */
+
+  /* spacing scale (4·8·12·16·20·24·32) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+
+  /* radius scale */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+
+  /* shadow */
+  --shadow-soft: 0 2px 10px rgba(80, 61, 80, 0.06);
+  --shadow-elevated: 0 12px 28px rgba(80, 61, 80, 0.12);
+  --shadow-interactive: 0 6px 16px rgba(88, 155, 144, 0.18);
+
+  /* typography scale */
+  --fs-label: 12px;
+  --fs-body-sm: 13px;
+  --fs-body: 14px;
+  --fs-card-title: 16px;
+  --fs-section-title: 20px;
+  --fs-stat: 48px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-main);
+  background-color: var(--color-beige);
+  color: var(--color-text-dark);
+}
+
+/* 배경 점 패턴 */
+.dot-pattern {
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(var(--color-tan) 1.5px, transparent 1.5px);
+  background-size: 32px 32px;
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* ---------- 레이아웃 ---------- */
+.dino-page {
+  max-width: 1080px;
+  margin: 0 auto;
+  padding: 28px 24px 60px;
+}
+
+.dino-page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--color-text-dark);
+  margin: 0 0 4px;
+}
+
+.dino-page-subtitle {
+  color: var(--color-tan);
+  font-weight: 500;
+  margin: 0 0 24px;
+}
+
+/* ---------- 카드 ---------- */
+.cloud-card {
+  background: var(--color-white);
+  border-radius: var(--radius-large);
+  padding: 24px;
+  box-shadow: 0 8px 0 rgba(0, 0, 0, 0.02);
+  position: relative;
+  overflow: hidden;
+  border: 2px solid transparent;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.cloud-card:hover {
+  transform: translateY(-2px);
+}
+
+.feed-card {
+  background: var(--color-white);
+  border-radius: var(--radius-medium);
+  padding: 20px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.02);
+}
+
+/* ---------- 텍스트 유틸 ---------- */
+.label-caps {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-tan);
+}
+
+.stat-large {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.stat-large > span:first-child {
+  font-size: 56px;
+  font-weight: 700;
+  color: var(--color-teal);
+  line-height: 1;
+}
+
+/* ---------- 태그 / 배지 ---------- */
+.tag-red {
+  background: var(--color-red);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-block;
+}
+.tag-teal {
+  background: var(--color-teal);
+  color: #fff;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 11px;
+  font-weight: 700;
+  display: inline-block;
+}
+
+/* ---------- 버튼 ---------- */
+.btn-primary,
+.btn-dino {
+  background: var(--color-red);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: transform 0.1s;
+}
+.btn-primary:active,
+.btn-dino:active {
+  transform: scale(0.95);
+}
+.btn-ghost {
+  background: var(--color-white);
+  color: var(--color-teal);
+  border: 2px solid var(--color-teal);
+  padding: 8px 20px;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn-teal {
+  background: var(--color-teal);
+  color: #fff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-pill);
+  font-family: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---------- 폼 ---------- */
+.dino-field {
+  margin-bottom: 16px;
+}
+.dino-field > label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--color-text-dark);
+}
+.dino-input,
+.dino-select,
+.dino-textarea {
+  width: 100%;
+  background: var(--color-white);
+  border: 2px solid var(--color-beige);
+  padding: 12px 16px;
+  border-radius: var(--radius-small);
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--color-text-dark);
+  outline: none;
+  transition: border-color 0.15s;
+}
+.dino-input:focus,
+.dino-select:focus,
+.dino-textarea:focus {
+  border-color: var(--color-teal);
+}
+.dino-textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+/* ---------- 그리드 ---------- */
+.dino-grid {
+  display: grid;
+  gap: 20px;
+}
+.dino-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+.dino-grid-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+@media (max-width: 768px) {
+  .dino-grid-2,
+  .dino-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- 진행률 링 ---------- */
+.ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 6px solid var(--color-beige);
+  border-top-color: var(--color-teal);
+  margin: 0 auto 8px;
+}
+
+/* ---------- 아바타 ---------- */
+.avatar {
+  width: 40px;
+  height: 40px;
+  background: var(--color-tan);
+  border: 3px solid var(--color-white);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ---------- 빈 상태(스켈레톤 안내) ---------- */
+.dino-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--color-tan);
+  font-weight: 500;
+}
+.dino-empty .emoji {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 12px;
+}
+
+/* ---------- 스크롤바 ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-tan);
+  border-radius: 10px;
+}
+
+.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* ---------- AI 마크다운 답변 렌더링 ---------- */
+.md {
+  font-size: 14px;
+  line-height: 1.6;
+  word-break: break-word;
+}
+.md > *:first-child {
+  margin-top: 0;
+}
+.md > *:last-child {
+  margin-bottom: 0;
+}
+.md h1,
+.md h2,
+.md h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 12px 0 6px;
+  color: var(--color-teal-dark);
+}
+.md h1 {
+  font-size: 17px;
+}
+.md p {
+  margin: 6px 0;
+}
+.md ul,
+.md ol {
+  margin: 6px 0;
+  padding-left: 20px;
+}
+.md li {
+  margin: 3px 0;
+}
+.md strong {
+  font-weight: 700;
+  color: var(--color-text-dark);
+}
+.md hr {
+  border: none;
+  border-top: 2px dashed var(--color-beige);
+  margin: 10px 0;
+}
+.md code {
+  background: var(--color-beige);
+  padding: 1px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+.md a {
+  color: var(--color-teal-dark);
+}
+
+/* =========================================================
+   운영 콘솔 (Ops) 공통 — 테이블/배지 (브랜드 토큰 재사용)
+   ========================================================= */
+.ops-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-body-sm);
+}
+.ops-table th {
+  text-align: left;
+  font-size: var(--fs-label);
+  font-weight: 700;
+  color: var(--text-muted);
+  padding: var(--space-3) var(--space-3);
+  border-bottom: 2px solid var(--border-soft);
+  white-space: nowrap;
+}
+.ops-table td {
+  padding: var(--space-3) var(--space-3);
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text);
+  vertical-align: middle;
+}
+.ops-table tbody tr:hover {
+  background: var(--surface-muted);
+}
+.ops-table td.num,
+.ops-table th.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.ops-table .row-link {
+  color: var(--accent-dark);
+  font-weight: 700;
+  text-decoration: none;
+}
+.ops-table .row-link:hover {
+  text-decoration: underline;
+}
+
+/* 상태/역할 badge */
+.ops-badge {
+  display: inline-block;
+  font-size: var(--fs-label);
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.ops-badge.ok {       /* 정상/진행 — 민트 */
+  background: rgba(119, 192, 179, 0.18);
+  color: var(--accent-dark);
+}
+.ops-badge.warn {     /* 주의 — 옐로우/오렌지 */
+  background: rgba(217, 154, 43, 0.18);
+  color: #9a6b16;
+}
+.ops-badge.danger {   /* 위험/종료 — 레드 */
+  background: rgba(216, 61, 82, 0.14);
+  color: var(--primary-dark);
+}
+.ops-badge.muted {    /* 일반 — 중립 */
+  background: var(--surface-muted);
+  color: var(--text-muted);
+}

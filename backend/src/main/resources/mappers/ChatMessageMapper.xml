@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.ai.ChatMessageMapper">
+
+    <insert id="insert" parameterType="ChatMessage" useGeneratedKeys="true" keyProperty="cmno">
+        INSERT INTO chat_messages (mno, coach, role, content)
+        VALUES (#{mno}, #{coach}, #{role}, #{content})
+    </insert>
+
+    <!-- 최근 limit건을 뽑은 뒤 오래된 순으로 정렬해 반환 -->
+    <select id="findRecent" resultType="ChatMessage">
+        SELECT * FROM (
+            SELECT * FROM chat_messages
+            WHERE mno = #{mno} AND coach = #{coach}
+            ORDER BY cmno DESC
+            LIMIT #{limit}
+        ) recent
+        ORDER BY cmno ASC
+    </select>
+
+    <delete id="deleteOlderThan">
+        DELETE FROM chat_messages
+        WHERE created_at &lt; DATE_SUB(NOW(), INTERVAL #{days} DAY)
+    </delete>
+
+</mapper>

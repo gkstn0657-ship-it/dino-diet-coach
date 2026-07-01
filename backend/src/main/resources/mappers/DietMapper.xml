@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.diet.DietMapper">
+
+    <insert id="insert" parameterType="Diet" useGeneratedKeys="true" keyProperty="dno">
+        INSERT INTO diets (mno, meal, eaten_date, title, photo_url, total_kcal, protein, carbs, fat)
+        VALUES (#{mno}, #{meal}, #{eatenDate}, #{title}, #{photoUrl},
+                #{totalKcal}, #{protein}, #{carbs}, #{fat})
+    </insert>
+
+    <insert id="insertFood" parameterType="DietFood">
+        INSERT INTO diet_foods (dno, fno, name, kcal, protein, carbs, fat, source)
+        VALUES (#{dno}, #{fno}, #{name}, #{kcal}, #{protein}, #{carbs}, #{fat}, #{source})
+    </insert>
+
+    <select id="findByMember" resultType="Diet">
+        SELECT * FROM diets
+        WHERE mno = #{mno}
+        <if test="meal != null and meal != ''">AND meal = #{meal}</if>
+        <if test="date != null and date != ''">AND eaten_date = #{date}</if>
+        ORDER BY eaten_date DESC, dno DESC
+    </select>
+
+    <!--
+      같은 날짜+끼니는 하나의 기록만 두는 정책의 슬롯 중복 검사용.
+      TODO(마이그레이션): 기능 안정화 + 기존 중복 데이터 정리 후
+      별도 마이그레이션 단계로 UNIQUE (mno, eaten_date, meal) 제약 추가를 검토할 것.
+      (지금은 기존 중복 가능성 때문에 DB 제약 없이 애플리케이션 레벨에서만 검사)
+    -->
+    <select id="findByMemberAndDateAndMeal" resultType="Diet">
+        SELECT * FROM diets
+        WHERE mno = #{mno} AND eaten_date = #{date} AND meal = #{meal}
+        ORDER BY dno DESC LIMIT 1
+    </select>
+
+    <select id="findById" resultType="Diet">
+        SELECT * FROM diets WHERE dno = #{dno}
+    </select>
+
+    <select id="findFoods" resultType="DietFood">
+        SELECT * FROM diet_foods WHERE dno = #{dno} ORDER BY id
+    </select>
+
+    <update id="update" parameterType="Diet">
+        UPDATE diets
+        SET meal = #{meal},
+            eaten_date = #{eatenDate},
+            title = #{title},
+            total_kcal = #{totalKcal},
+            protein = #{protein},
+            carbs = #{carbs},
+            fat = #{fat}
+        WHERE dno = #{dno}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM diets WHERE dno = #{dno}
+    </delete>
+
+    <delete id="deleteFoods">
+        DELETE FROM diet_foods WHERE dno = #{dno}
+    </delete>
+
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*) FROM diets
+    </select>
+
+</mapper>

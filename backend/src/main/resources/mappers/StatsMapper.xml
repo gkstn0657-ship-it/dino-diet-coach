@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.stats.StatsMapper">
+
+    <select id="aggregateByDate" resultType="DailyStat">
+        SELECT mno,
+               eaten_date    AS stat_date,
+               SUM(total_kcal) AS total_kcal,
+               SUM(protein)  AS protein,
+               SUM(carbs)    AS carbs,
+               SUM(fat)      AS fat,
+               COUNT(*)      AS meal_count
+        FROM diets
+        WHERE eaten_date = #{date}
+        GROUP BY mno, eaten_date
+    </select>
+
+    <delete id="deleteByDate">
+        DELETE FROM daily_nutrition_stats WHERE stat_date = #{date}
+    </delete>
+
+    <insert id="insert" parameterType="DailyStat">
+        INSERT INTO daily_nutrition_stats (mno, stat_date, total_kcal, protein, carbs, fat, meal_count)
+        VALUES (#{mno}, #{statDate}, #{totalKcal}, #{protein}, #{carbs}, #{fat}, #{mealCount})
+    </insert>
+
+    <select id="findByMember" resultType="DailyStat">
+        SELECT * FROM daily_nutrition_stats
+        WHERE mno = #{mno}
+        ORDER BY stat_date DESC
+        LIMIT 14
+    </select>
+
+    <!-- 기간별 일자 집계: 통계 테이블이 아니라 diets 원본에서 직접 (실시간/정확) -->
+    <select id="rangeByMember" resultType="DailyStat">
+        SELECT mno,
+               eaten_date      AS stat_date,
+               SUM(total_kcal) AS total_kcal,
+               SUM(protein)    AS protein,
+               SUM(carbs)      AS carbs,
+               SUM(fat)        AS fat,
+               COUNT(*)        AS meal_count
+        FROM diets
+        WHERE mno = #{mno} AND eaten_date BETWEEN #{from} AND #{to}
+        GROUP BY mno, eaten_date
+        ORDER BY eaten_date ASC
+    </select>
+
+</mapper>

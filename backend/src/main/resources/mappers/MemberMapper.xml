@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.member.MemberMapper">
+
+    <insert id="insert" parameterType="Member" useGeneratedKeys="true" keyProperty="mno">
+        INSERT INTO members (email, password, name, role, height, weight, disease, goal)
+        VALUES (#{email}, #{password}, #{name}, COALESCE(#{role},'USER'),
+                #{height}, #{weight}, #{disease}, #{goal})
+    </insert>
+
+    <select id="findByEmail" resultType="Member">
+        SELECT * FROM members WHERE email = #{email} AND active = 1
+    </select>
+
+    <!-- 정지(active=0) 포함 — 로그인 검증에서 '정지된 계정' 안내를 위해 -->
+    <select id="findByEmailAny" resultType="Member">
+        SELECT * FROM members WHERE email = #{email}
+    </select>
+
+    <select id="findByMno" resultType="Member">
+        SELECT * FROM members WHERE mno = #{mno}
+    </select>
+
+    <select id="countByEmail" resultType="int">
+        SELECT COUNT(*) FROM members WHERE email = #{email}
+    </select>
+
+    <select id="findAll" resultType="Member">
+        SELECT * FROM members
+        <where>
+            active = 1
+            <if test="keyword != null and keyword != ''">
+                AND (name LIKE CONCAT('%', #{keyword}, '%')
+                     OR email LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY mno
+    </select>
+
+    <update id="updateInfo" parameterType="Member">
+        UPDATE members
+        SET name = #{name},
+            <if test="role != null">role = #{role},</if>
+            goal = #{goal}
+        WHERE mno = #{mno}
+    </update>
+
+    <update id="updateProfile" parameterType="Member">
+        UPDATE members
+        SET <if test="name != null">name = #{name},</if>
+            height = #{height},
+            weight = #{weight},
+            disease = #{disease},
+            goal = #{goal},
+            gender = #{gender},
+            birth_year = #{birthYear},
+            activity_level = #{activityLevel},
+            goal_type = #{goalType},
+            job_activity = #{jobActivity},
+            exercise_frequency = #{exerciseFrequency},
+            exercise_intensity = #{exerciseIntensity},
+            daily_steps = #{dailySteps},
+            weekly_exercise_hours = #{weeklyExerciseHours},
+            target_calories = #{targetCalories}
+        WHERE email = #{email}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE members SET password = #{password} WHERE mno = #{mno}
+    </update>
+
+    <!-- 운영 콘솔: 정지 포함 전체 회원 (active 상태 노출) -->
+    <select id="findAllForOps" resultType="Member">
+        SELECT * FROM members
+        <where>
+            <if test="keyword != null and keyword != ''">
+                (name LIKE CONCAT('%', #{keyword}, '%')
+                 OR email LIKE CONCAT('%', #{keyword}, '%'))
+            </if>
+        </where>
+        ORDER BY mno
+    </select>
+
+    <update id="updateActive">
+        UPDATE members SET active = #{active} WHERE mno = #{mno}
+    </update>
+
+    <delete id="delete">
+        DELETE FROM members WHERE mno = #{mno}
+    </delete>
+
+    <!-- 비밀번호 재설정 토큰 -->
+    <insert id="insertResetToken">
+        INSERT INTO password_reset_tokens (mno, token, expires_at)
+        VALUES (#{mno}, #{token}, #{expiresAt})
+    </insert>
+    <select id="findResetToken" resultType="PasswordResetToken">
+        SELECT * FROM password_reset_tokens WHERE token = #{token}
+    </select>
+    <update id="markResetTokenUsed">
+        UPDATE password_reset_tokens SET used = 1 WHERE id = #{id}
+    </update>
+    <update id="invalidateActiveTokens">
+        UPDATE password_reset_tokens SET used = 1 WHERE mno = #{mno} AND used = 0
+    </update>
+
+</mapper>

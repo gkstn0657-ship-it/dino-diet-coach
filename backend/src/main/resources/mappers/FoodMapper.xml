@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.food.FoodMapper">
+
+    <select id="search" resultType="Food">
+        SELECT * FROM foods
+        <if test="keyword != null and keyword != ''">
+            WHERE name LIKE CONCAT('%', #{keyword}, '%')
+        </if>
+        ORDER BY fno
+        LIMIT 30
+    </select>
+
+    <!-- 갱신용: 음식명 정확 일치 1건 (중복 누적 방지) -->
+    <select id="findByName" resultType="Food">
+        SELECT * FROM foods WHERE name = #{name} LIMIT 1
+    </select>
+
+    <insert id="insert" parameterType="Food" useGeneratedKeys="true" keyProperty="fno">
+        INSERT INTO foods (name, kcal, protein, carbs, fat)
+        VALUES (#{name}, #{kcal}, #{protein}, #{carbs}, #{fat})
+    </insert>
+
+    <update id="updateNutrition" parameterType="Food">
+        UPDATE foods
+        SET kcal = #{kcal}, protein = #{protein}, carbs = #{carbs}, fat = #{fat}
+        WHERE fno = #{fno}
+    </update>
+
+</mapper>

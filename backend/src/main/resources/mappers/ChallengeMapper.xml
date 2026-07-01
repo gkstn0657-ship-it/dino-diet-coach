@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.challenge.ChallengeMapper">
+
+    <insert id="insert" parameterType="Challenge" useGeneratedKeys="true" keyProperty="cno">
+        INSERT INTO challenges (mno, title, description, emoji, color, start_date, end_date, image_url,
+                                cond_type, cond_value, approval_status, visibility)
+        VALUES (#{mno}, #{title}, #{description},
+                COALESCE(#{emoji},'🏆'), COALESCE(#{color},'#77C0B3'),
+                #{startDate}, #{endDate}, #{imageUrl}, #{condType}, #{condValue},
+                COALESCE(#{approvalStatus},'APPROVED'), COALESCE(#{visibility},'VISIBLE'))
+    </insert>
+
+    <select id="findAll" resultType="Challenge">
+        SELECT c.*,
+               (SELECT COUNT(*) FROM challenge_participants cp WHERE cp.cno = c.cno) AS participant_count
+        FROM challenges c
+        ORDER BY c.cno DESC
+    </select>
+
+    <!-- 일반 목록: 승인+노출만. 정렬 popular(참여자수) / latest(최신) -->
+    <select id="findPublic" resultType="Challenge">
+        SELECT c.*,
+               (SELECT COUNT(*) FROM challenge_participants cp WHERE cp.cno = c.cno) AS participant_count
+        FROM challenges c
+        WHERE c.approval_status = 'APPROVED' AND c.visibility = 'VISIBLE'
+        ORDER BY
+        <choose>
+            <when test="sort == 'latest'">c.cno DESC</when>
+            <otherwise>participant_count DESC, c.cno DESC</otherwise>
+        </choose>
+    </select>
+
+    <update id="setApproval">
+        UPDATE challenges SET approval_status = #{status} WHERE cno = #{cno}
+    </update>
+    <update id="setVisibility">
+        UPDATE challenges SET visibility = #{visibility} WHERE cno = #{cno}
+    </update>
+
+    <select id="findById" resultType="Challenge">
+        SELECT c.*,
+               (SELECT COUNT(*) FROM challenge_participants cp WHERE cp.cno = c.cno) AS participant_count
+        FROM challenges c
+        WHERE c.cno = #{cno}
+    </select>
+
+    <delete id="delete">
+        DELETE FROM challenges WHERE cno = #{cno}
+    </delete>
+
+    <select id="findParticipant" resultType="ChallengeParticipant">
+        SELECT * FROM challenge_participants WHERE cno = #{cno} AND mno = #{mno}
+    </select>
+
+    <insert id="insertParticipant" parameterType="ChallengeParticipant">
+        INSERT INTO challenge_participants (cno, mno, progress, done_days, total_days, pledge)
+        VALUES (#{cno}, #{mno}, COALESCE(#{progress},0), COALESCE(#{doneDays},0), COALESCE(#{totalDays},7), #{pledge})
+    </insert>
+
+    <delete id="deleteParticipant">
+        DELETE FROM challenge_participants WHERE cno = #{cno} AND mno = #{mno}
+    </delete>
+
+    <update id="updateParticipant">
+        UPDATE challenge_participants
+        SET done_days = #{doneDays}, progress = #{progress}, last_check_date = #{checkDate}
+        WHERE cno = #{cno} AND mno = #{mno}
+    </update>
+
+    <!-- 리더보드: 달성률 → 달성일 → 먼저 참여한 순 -->
+    <select id="leaderboard" resultType="map">
+        SELECT m.name AS name, cp.mno AS mno, cp.progress AS progress, cp.done_days AS doneDays
+        FROM challenge_participants cp
+        JOIN members m ON m.mno = cp.mno
+        WHERE cp.cno = #{cno}
+        ORDER BY cp.progress DESC, cp.done_days DESC, cp.joined_at ASC
+        LIMIT 10
+    </select>
+
+    <select id="findJoinedCnos" resultType="int">
+        SELECT cno FROM challenge_participants WHERE mno = #{mno}
+    </select>
+
+    <select id="findParticipants" resultType="ChallengeParticipant">
+        SELECT * FROM challenge_participants WHERE cno = #{cno}
+    </select>
+
+    <select id="findByCreator" resultType="Challenge">
+        SELECT c.*,
+               (SELECT COUNT(*) FROM challenge_participants cp WHERE cp.cno = c.cno) AS participant_count
+        FROM challenges c
+        WHERE c.mno = #{mno}
+        ORDER BY c.cno DESC
+    </select>
+
+    <select id="findMyChallenges" resultType="Challenge">
+        SELECT c.*, cp.progress, cp.done_days, cp.total_days
+        FROM challenge_participants cp
+        JOIN challenges c ON c.cno = cp.cno
+        WHERE cp.mno = #{mno}
+        ORDER BY cp.joined_at DESC
+    </select>
+
+</mapper>

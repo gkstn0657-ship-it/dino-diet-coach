@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ssafy.nyamnyam.domain.water.WaterMapper">
+
+    <select id="findCups" resultType="java.lang.Integer">
+        SELECT cups FROM water_logs WHERE mno = #{mno} AND log_date = #{date}
+    </select>
+
+    <insert id="upsert">
+        INSERT INTO water_logs (mno, log_date, cups)
+        VALUES (#{mno}, #{date}, #{cups})
+        ON DUPLICATE KEY UPDATE cups = #{cups}
+    </insert>
+
+</mapper>
